@@ -54,3 +54,10 @@ form input {
   width: 100%;
   box-sizing: border-box;
 }
+
+.add-student {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: auto;
+}
