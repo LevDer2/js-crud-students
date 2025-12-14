@@ -69,4 +69,8 @@ form input {
   margin: auto;
   display: flex;
 }
+
+.delete-students {
+  margin-bottom: 20px;
+}
 /*# sourceMappingURL=js-crud-students.4d663569.css.map */
