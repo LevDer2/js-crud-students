@@ -61,3 +61,7 @@ form input {
   justify-content: center;
   margin: auto;
 }
+
+.delete-students {
+  margin-bottom: 20px;
+}

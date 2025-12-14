@@ -1,58 +1,132 @@
 // ! Elements!
 const getStudentsButton = document.querySelector("#get-students-btn");
 const table = document.querySelector(".students-tbody");
+const formRef = document.querySelector("#add-student-form");
 
-// Функція для отримання всіх студентів
+// ! If here we have null we will add new student if underfined we will edit our student
+let editOrAdd = null;
+
+//! API Get STudents Функція для отримання всіх студентів
 function getStudents() {
   return fetch(`http://localhost:3000/students`).then((res) => res.json());
+}
+
+// ! API Delete student
+function delStudentApi(id) {
+  return fetch(`http://localhost:3000/students/${id}`, {
+    method: "DELETE",
+  }).then((res) => res.json());
+}
+
+// ! API Add New student
+function addStudentApi(student) {
+  const options = {
+    method: "POST",
+    body: JSON.stringify(student),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  };
+
+  return fetch(`http://localhost:3000/students/`, options).then((res) =>
+    res.json()
+  );
+}
+
+// ! API Edit Student
+function editStudentApi(id, student) {
+  const options = {
+    method: "PUT",
+    body: JSON.stringify(student),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  };
+
+  return fetch(`http://localhost:3000/students/${id}`, options).then((res) =>
+    res.json()
+  );
 }
 
 // ! For checking our students
 // getStudents().then((res) => console.log(res));
 
 // ! If we click to this button we will get our students
-getStudentsButton.addEventListener("click", (event) => {
+getStudentsButton.addEventListener("click", () => {
+  // getStudentsButton.textContent = "Оновити список студентів";
+  getStudentsButton.style.display = "none";
   return getStudents().then(renderStudents);
 });
 
-// ! If we click to this button we will delete one of our students
-table.addEventListener("click", (event) => {
-  const deleteButton = event.target.closest("button.delete-students");
-  if (deleteButton) {
-    return fetch(`http://localhost:3000/students`, {
-      method: "DELETE",
-    }).then(() => deleteStudent);
-  }
-});
-
-// Функція для відображення студентів у таблиці
+// ! Render function
 function renderStudents(students) {
   table.innerHTML = "";
-
   const rows = students
     .map(({ id, name, skills, isEnrolled, age, course, email }) => {
-      const skillsList =
-        skills > "1"
-          ? Object.values(skills).join(", ")
-          : "He/she did not have skils";
-
+      const skillsList = Object.values(skills).join("");
       return `
-        <tr>
+        <tr id="${id}">
           <td>${id}</td>
-          <td>${name}</td>
-          <td>${age}</td>
-          <td>${course}</td>
-          <td>${skillsList}</td>
-          <td>${email}</td>
-          <td>${isEnrolled ? "Так" : "Ні"}</td>
-          <td><button class="delete-students">Видалити студента</button></td>
+          <td data-action="Name">${name}</td>
+          <td data-action="Age">${age}</td>
+          <td data-action="Course">${course}</td>
+          <td data-action="Skills">${skillsList}</td>
+          <td data-action="Email">${email}</td>
+          <td data-action="CheckBox">${isEnrolled ? "Онлайн" : "Офлайн"}</td>
+          <td><button class="delete-students" data-action="Delete">Видалити студента</button>\
+          <button class="edit-students" data-action="Edit">Змінити дані студента</button></td>
         </tr>
       `;
     })
     .join("");
-
   table.insertAdjacentHTML("beforeend", rows);
 }
+
+// ! If we click to this button we will delete one of our students
+table.addEventListener("click", (event) => {
+  // const deleteButton = event.target.closest("button.delete-students");
+  if (event.target.dataset.action === "Delete") {
+    const itemId = event.target.closest("tr").id;
+    return deleteStudent(itemId);
+  } else if (event.target.dataset.action === "Edit") {
+    const itemId = event.target.closest("tr")
+    console.log(itemId);
+    editOrAdd = undefined;
+    return updateStudent(itemId);
+  }
+});
+
+// ! Submit form to add new student or edit student
+formRef.addEventListener("submit", (event) => {
+  event.preventDefault();
+  const { name, age, course, skills, email, isEnrolled } =
+    event.target.elements;
+  console.log(name.value);
+  console.log(age.value);
+  console.log(course.value);
+  console.log(skills.value);
+  console.log(email.value);
+  console.log(isEnrolled.checked);
+  const data = {
+    name: name.value.trim(),
+    age: Number(age.value.trim()),
+    course: course.value.trim(),
+    skills: skills.value.trim(),
+    email: email.value.trim(),
+    isEnrolled: isEnrolled.checked,
+  };
+  // ! Add student
+  if (editOrAdd === null) {
+      addStudentApi(data)
+    .then(() => getStudents())
+    .then(renderStudents);
+  }
+  // ! Edit student
+  else if (editOrAdd === undefined) {
+    
+  }
+  // event.target.reset();
+});
 
 // Функція для додавання нового студента
 function addStudent(e) {
@@ -66,5 +140,10 @@ function updateStudent(id) {
 
 // Функція для видалення студента
 function deleteStudent(id) {
-  console.log("Yes?");
+  console.log(id);
+  delStudentApi(id)
+    .then(() => getStudents())
+    .then(renderStudents);
 }
+
+// TODO Clean code in // and make edit function
