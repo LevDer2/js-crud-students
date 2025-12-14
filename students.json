@@ -111,11 +111,11 @@
     },
     {
       "id": "b52e",
-      "name": "123",
-      "age": 123,
-      "course": "123",
-      "skills": "1",
-      "email": "ds@43",
+      "name": "12",
+      "age": 12,
+      "course": "12",
+      "skills": "0",
+      "email": "ds@4",
       "isEnrolled": false
     }
   ]
