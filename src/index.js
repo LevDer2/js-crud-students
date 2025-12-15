@@ -158,7 +158,6 @@
 //   formRef.elements.isEnrolled.checked = status === "Онлайн";
 // }
 
-
 // // Функція для видалення студента
 // function deleteStudent(id) {
 //   console.log(id);
@@ -169,8 +168,6 @@
 
 // // TODO Clean code in // and make edit function
 
-
-
 // ! Elements!
 const getStudentsButton = document.querySelector("#get-students-btn");
 const table = document.querySelector(".students-tbody");
@@ -179,19 +176,25 @@ const formRef = document.querySelector("#add-student-form");
 let editOrAdd = null;
 
 //! API Get Students
-function getStudents() {
-  return fetch(`http://localhost:3000/students`).then((res) => res.json());
+async function getStudents() {
+  // return fetch(`http://localhost:3000/students`).then((res) => res.json());
+  const res = await fetch(`http://localhost:3000/students`);
+  return await res.json();
 }
 
 // ! API Delete student
-function delStudentApi(id) {
-  return fetch(`http://localhost:3000/students/${id}`, {
+async function delStudentApi(id) {
+  // return fetch(`http://localhost:3000/students/${id}`, {
+  //   method: "DELETE",
+  // }).then((res) => res.json());
+  const res = await fetch(`http://localhost:3000/students/${id}`, {
     method: "DELETE",
-  }).then((res) => res.json());
+  })
+  return await res.json();
 }
 
 // ! API Add New student
-function addStudentApi(student) {
+async function addStudentApi(student) {
   const options = {
     method: "POST",
     body: JSON.stringify(student),
@@ -200,13 +203,12 @@ function addStudentApi(student) {
     },
   };
 
-  return fetch(`http://localhost:3000/students/`, options).then((res) =>
-    res.json()
-  );
+  const res = await fetch(`http://localhost:3000/students/`, options)
+  return await res.json()
 }
 
 // ! API Edit Student
-function editStudentApi(id, student) {
+async function editStudentApi(id, student) {
   const options = {
     method: "PUT",
     body: JSON.stringify(student),
@@ -215,15 +217,15 @@ function editStudentApi(id, student) {
     },
   };
 
-  return fetch(`http://localhost:3000/students/${id}`, options).then((res) =>
-    res.json()
-  );
+  const res = await fetch(`http://localhost:3000/students/${id}`, options)
+  return await res.json()
 }
 
 // ! If we click to this button we will get our students
-getStudentsButton.addEventListener("click", () => {
+getStudentsButton.addEventListener("click", async () => {
   getStudentsButton.style.display = "none";
-  return getStudents().then(renderStudents);
+  const res = await getStudents()
+  await (renderStudents(res));
 });
 
 // ! Render function
@@ -263,7 +265,6 @@ table.addEventListener("click", (event) => {
     const itemId = event.target.closest("tr").id;
     return deleteStudent(itemId);
   } else if (event.target.dataset.action === "Edit") {
-    // ✅ було: const itemId = event.target.closest("tr")
     const itemId = event.target.closest("tr").id;
     editOrAdd = itemId;
     return updateStudent(itemId);
@@ -271,10 +272,10 @@ table.addEventListener("click", (event) => {
 });
 
 // ! Submit form to add new student or edit student
-formRef.addEventListener("submit", (event) => {
+async function handleStudentSubmit(event) {
   event.preventDefault();
-  const { name, age, course, skills, email, isEnrolled } =
-    event.target.elements;
+
+  const { name, age, course, skills, email, isEnrolled } = event.target.elements;
 
   const data = {
     name: name.value.trim(),
@@ -285,36 +286,48 @@ formRef.addEventListener("submit", (event) => {
     isEnrolled: isEnrolled.checked,
   };
 
-  // ! Add student
-  if (editOrAdd === null) {
-    return addStudentApi(data)
-      .then(() => getStudents())
-      .then(renderStudents)
-      .finally(() => {
-        event.target.reset();
-      });
-  }
-
-  const id = editOrAdd;
-
-  return editStudentApi(id, { id: Number(id), ...data })
-    .then(() => getStudents())
-    .then(renderStudents)
-    .finally(() => {
+  try {
+    // Add student
+    if (editOrAdd === null) {
+      await addStudentApi(data);
+    } else {
+      // Edit student
+      const id = editOrAdd;
+      await editStudentApi(id, { id: Number(id), ...data });
       editOrAdd = null;
-      event.target.reset();
-    });
-});
+    }
+
+    const students = await getStudents();
+    renderStudents(students);
+  } catch (error) {
+    console.error("Submit error:", error);
+    // тут можеш показати повідомлення в UI, напр. toast/alert
+    // alert("Сталася помилка. Спробуй ще раз.");
+  } finally {
+    event.target.reset();
+  }
+}
+
+formRef.addEventListener("submit", handleStudentSubmit);
+
 
 function updateStudent(id) {
   const tr = document.getElementById(id);
 
   const nameText = tr.querySelector('[data-action="Name"]').textContent.trim();
   const ageText = tr.querySelector('[data-action="Age"]').textContent.trim();
-  const courseText = tr.querySelector('[data-action="Course"]').textContent.trim();
-  const skillsText = tr.querySelector('[data-action="Skills"]').textContent.trim();
-  const emailText = tr.querySelector('[data-action="Email"]').textContent.trim();
-  const statusText = tr.querySelector('[data-action="CheckBox"]').textContent.trim();
+  const courseText = tr
+    .querySelector('[data-action="Course"]')
+    .textContent.trim();
+  const skillsText = tr
+    .querySelector('[data-action="Skills"]')
+    .textContent.trim();
+  const emailText = tr
+    .querySelector('[data-action="Email"]')
+    .textContent.trim();
+  const statusText = tr
+    .querySelector('[data-action="CheckBox"]')
+    .textContent.trim();
 
   formRef.elements.name.value = nameText;
   formRef.elements.age.value = ageText;
@@ -324,9 +337,12 @@ function updateStudent(id) {
   formRef.elements.isEnrolled.checked = statusText === "Онлайн";
 }
 
-// Функція для видалення студента
-function deleteStudent(id) {
-  return delStudentApi(id)
-    .then(() => getStudents())
-    .then(renderStudents);
+async function deleteStudent(id) {
+  try {
+    await delStudentApi(id);
+    const students = await getStudents();
+    return renderStudents(students);
+  } catch (error) {
+    console.log(error);
+  }
 }

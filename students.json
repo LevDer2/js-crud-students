@@ -67,56 +67,11 @@
     {
       "id": "280e",
       "name": "Lev",
-      "age": 15,
+      "age": 12,
       "course": "Frontend",
-      "skills": "IT",
+      "skills": "IT, JS, LOL",
       "email": "lv@1",
       "isEnrolled": true
-    },
-    {
-      "id": "ebbf",
-      "name": "ds",
-      "age": 213,
-      "course": "132",
-      "skills": "sad",
-      "email": "312@1",
-      "isEnrolled": false
-    },
-    {
-      "id": "3794",
-      "name": "21",
-      "age": 12,
-      "course": "Frontend",
-      "skills": "123",
-      "email": "ds@43",
-      "isEnrolled": false
-    },
-    {
-      "id": "00a9",
-      "name": "Lev",
-      "age": 123,
-      "course": "123",
-      "skills": "123",
-      "email": "ds@1",
-      "isEnrolled": true
-    },
-    {
-      "id": "997b",
-      "name": "Lev",
-      "age": 123,
-      "course": "123",
-      "skills": "132",
-      "email": "ds@43",
-      "isEnrolled": false
-    },
-    {
-      "id": "b52e",
-      "name": "12",
-      "age": 12,
-      "course": "12",
-      "skills": "0",
-      "email": "ds@4",
-      "isEnrolled": false
     }
   ]
 }
